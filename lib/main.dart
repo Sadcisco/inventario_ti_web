@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'screens/dashboard_view.dart';
+
 
 void main() {
   runApp(const InventarioApp());
