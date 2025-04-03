@@ -6,7 +6,6 @@ import '../services/equipo_service.dart';
 import '../utils/constants.dart';
 import '../widgets/drawer_menu.dart';
 import '../widgets/error_message.dart';
-import 'equipo_form.dart';
 
 /// Pantalla para visualizar y gestionar equipos
 class EquiposGeneralesPage extends StatefulWidget {
@@ -111,101 +110,6 @@ class _EquiposGeneralesPageState extends State<EquiposGeneralesPage> {
   void _seleccionarEquipo(EquipoModel equipo) {
     setState(() => _equipoSeleccionado = equipo);
   }
-  
-  /// Abre el formulario para agregar un nuevo equipo
-  Future<void> _agregarEquipo(BuildContext context) async {
-    final result = await Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const EquipoForm()),
-    );
-    
-    if (result == true) {
-      _cargarEquipos(); // Recargamos la lista si se creó un equipo
-    }
-  }
-  
-  /// Abre el formulario para editar un equipo existente
-  Future<void> _editarEquipo(BuildContext context) async {
-    if (_equipoSeleccionado == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Seleccione un equipo para editar')),
-      );
-      return;
-    }
-    
-    final result = await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => EquipoForm(equipo: _equipoSeleccionado),
-      ),
-    );
-    
-    if (result == true) {
-      _cargarEquipos(); // Recargamos la lista si se actualizó el equipo
-    }
-  }
-  
-  /// Muestra un diálogo de confirmación y elimina el equipo seleccionado
-  Future<void> _eliminarEquipo(BuildContext context) async {
-    if (_equipoSeleccionado == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Seleccione un equipo para eliminar')),
-      );
-      return;
-    }
-    
-    // Mostrar diálogo de confirmación
-    final confirmar = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Confirmar eliminación'),
-        content: Text('¿Está seguro que desea eliminar el equipo ${_equipoSeleccionado!.detalle['nombre_equipo'] ?? 'seleccionado'}?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancelar'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Eliminar'),
-          ),
-        ],
-      ),
-    );
-    
-    if (confirmar != true) return;
-    
-    // Proceder con la eliminación
-    setState(() => _isLoading = true);
-    
-    try {
-      final resultado = await _equipoService.eliminarEquipo(_equipoSeleccionado!.id);
-      
-      if (resultado) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Equipo eliminado con éxito')),
-        );
-        setState(() {
-          _equipoSeleccionado = null;
-          _isLoading = false;
-        });
-        _cargarEquipos(); // Recargamos la lista
-      } else {
-        setState(() {
-          _isLoading = false;
-          _hasError = true;
-          _errorMessage = 'Error al eliminar el equipo';
-        });
-      }
-    } catch (e) {
-      setState(() {
-        _isLoading = false;
-        _hasError = true;
-        _errorMessage = 'Error: $e';
-      });
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -214,13 +118,7 @@ class _EquiposGeneralesPageState extends State<EquiposGeneralesPage> {
         title: const Text('Equipos'),
         actions: [
           IconButton(
-            icon: const Icon(LucideIcons.plus),
-            tooltip: 'Agregar equipo',
-            onPressed: () => _agregarEquipo(context),
-          ),
-          IconButton(
             icon: const Icon(Icons.refresh),
-            tooltip: 'Actualizar',
             onPressed: _cargarEquipos,
           ),
         ],
@@ -383,18 +281,11 @@ class _EquiposGeneralesPageState extends State<EquiposGeneralesPage> {
             Row(
               children: [
                 OutlinedButton.icon(
-                  onPressed: () => _editarEquipo(context),
+                  onPressed: () {
+                    // TODO: Implementar edición
+                  },
                   icon: const Icon(LucideIcons.edit),
                   label: const Text('Editar'),
-                ),
-                const SizedBox(width: 8),
-                OutlinedButton.icon(
-                  onPressed: () => _eliminarEquipo(context),
-                  icon: const Icon(LucideIcons.trash),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: Colors.red,
-                  ),
-                  label: const Text('Eliminar'),
                 ),
                 const SizedBox(width: 8),
                 OutlinedButton.icon(

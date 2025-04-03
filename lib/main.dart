@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'views/equipos_generales_page.dart';
+import 'screens/equipos_generales_view.dart';
 import 'theme/app_theme.dart';
 
 void main() {
