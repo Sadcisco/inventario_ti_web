@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import '../screens/consumibles_page.dart';
+import '../screens/dashboard_page.dart';
 import '../screens/equipos_generales_view.dart';
 
 class DrawerMenu extends StatelessWidget {
@@ -24,6 +25,18 @@ class DrawerMenu extends StatelessWidget {
           Expanded(
             child: ListView(
               children: [
+                ListTile(
+                  leading: const Icon(LucideIcons.layoutDashboard),
+                  title: const Text('Dashboard'),
+                  onTap: () {
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const DashboardPage(),
+                      ),
+                    );
+                  },
+                ),
                 ListTile(
                   leading: const Icon(LucideIcons.monitor),
                   title: const Text('Equipos Generales'),

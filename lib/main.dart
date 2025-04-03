@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'screens/equipos_generales_view.dart';
+import 'screens/dashboard_page.dart';
 import 'theme/app_theme.dart';
 
 void main() {
@@ -15,7 +15,7 @@ class InventarioTIApp extends StatelessWidget {
       title: 'Inventario TI',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
-      home: const EquiposGeneralesPage(),
+      home: const DashboardPage(),
     );
   }
 }
