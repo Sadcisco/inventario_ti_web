@@ -7,6 +7,8 @@ import '../utils/constants.dart';
 import '../widgets/drawer_menu.dart';
 import '../widgets/error_message.dart';
 import 'equipo_form.dart';
+import 'historial_equipo.dart';
+import 'mantenimientos_equipo.dart';
 
 /// Pantalla para visualizar y gestionar equipos
 class EquiposGeneralesPage extends StatefulWidget {
@@ -141,8 +143,28 @@ class _EquiposGeneralesPageState extends State<EquiposGeneralesPage> {
     );
     
     if (result == true) {
-      _cargarEquipos(); // Recargamos la lista si se actualizó el equipo
+      _cargarEquipos(); // Recargamos la lista si se editó un equipo
     }
+  }
+  
+  /// Navega a la pantalla de historial del equipo seleccionado
+  void _verHistorial(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => HistorialEquipoPage(equipo: _equipoSeleccionado!),
+      ),
+    );
+  }
+  
+  /// Navega a la pantalla de mantenimientos del equipo seleccionado
+  void _verMantenimientos(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => MantenimientosEquipoPage(equipo: _equipoSeleccionado!),
+      ),
+    );
   }
   
   /// Muestra un diálogo de confirmación y elimina el equipo seleccionado
@@ -398,11 +420,15 @@ class _EquiposGeneralesPageState extends State<EquiposGeneralesPage> {
                 ),
                 const SizedBox(width: 8),
                 OutlinedButton.icon(
-                  onPressed: () {
-                    // TODO: Implementar historial
-                  },
+                  onPressed: () => _verHistorial(context),
                   icon: const Icon(LucideIcons.history),
                   label: const Text('Historial'),
+                ),
+                const SizedBox(width: 8),
+                OutlinedButton.icon(
+                  onPressed: () => _verMantenimientos(context),
+                  icon: const Icon(LucideIcons.wrench),
+                  label: const Text('Mantenimientos'),
                 ),
               ],
             ),

@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
+import '../screens/consumibles_page.dart';
+import '../screens/equipos_generales_view.dart';
+
 class DrawerMenu extends StatelessWidget {
   const DrawerMenu({super.key});
 
@@ -20,24 +23,44 @@ class DrawerMenu extends StatelessWidget {
           ),
           Expanded(
             child: ListView(
-              children: const [
+              children: [
                 ListTile(
-                  leading: Icon(LucideIcons.monitor),
-                  title: Text('Equipos Generales'),
+                  leading: const Icon(LucideIcons.monitor),
+                  title: const Text('Equipos Generales'),
+                  onTap: () {
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const EquiposGeneralesPage(),
+                      ),
+                    );
+                  },
                 ),
-                ListTile(
+                const ListTile(
                   leading: Icon(LucideIcons.monitorSmartphone),
                   title: Text('Computacionales'),
                 ),
-                ListTile(
+                const ListTile(
                   leading: Icon(LucideIcons.smartphone),
                   title: Text('Celulares'),
                 ),
-                ListTile(
+                const ListTile(
                   leading: Icon(LucideIcons.printer),
                   title: Text('Impresoras'),
                 ),
                 ListTile(
+                  leading: const Icon(LucideIcons.package),
+                  title: const Text('Consumibles'),
+                  onTap: () {
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const ConsumiblesPage(),
+                      ),
+                    );
+                  },
+                ),
+                const ListTile(
                   leading: Icon(LucideIcons.history),
                   title: Text('Historial'),
                 ),
