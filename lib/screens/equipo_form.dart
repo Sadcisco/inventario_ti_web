@@ -33,18 +33,27 @@ class _EquipoFormState extends State<EquipoForm> {
   void initState() {
     super.initState();
     
+    // Inicializamos los controladores para cada tipo de equipo
+    _inicializarControladores();
+    
     // Si estamos editando, cargamos los datos del equipo
     if (widget.equipo != null) {
+      print('Cargando datos del equipo para edición: ${widget.equipo!.id}');
+      print('Tipo de equipo: ${widget.equipo!.tipo}');
+      print('Estado: ${widget.equipo!.estado}');
+      print('Observaciones: ${widget.equipo!.observaciones}');
+      print('Detalles: ${widget.equipo!.detalle}');
+      
+      // Establecer el tipo de equipo
       _tipoEquipo = widget.equipo!.tipo;
+      
+      // Establecer estado y observaciones
       _estadoController.text = widget.equipo!.estado;
       _observacionesController.text = widget.equipo!.observaciones ?? '';
       
       // Cargamos los detalles específicos según el tipo
       _cargarDetallesEspecificos();
     }
-    
-    // Inicializamos los controladores para cada tipo de equipo
-    _inicializarControladores();
   }
   
   @override
@@ -72,6 +81,7 @@ class _EquipoFormState extends State<EquipoForm> {
     _detallesControllers['procesador'] = TextEditingController();
     _detallesControllers['ram'] = TextEditingController();
     _detallesControllers['almacenamiento'] = TextEditingController();
+    _detallesControllers['disco_duro'] = TextEditingController(); 
     _detallesControllers['sistema_operativo'] = TextEditingController();
     
     // Campos específicos para celulares
@@ -87,90 +97,244 @@ class _EquipoFormState extends State<EquipoForm> {
   
   // Carga los detalles específicos del equipo en edición
   void _cargarDetallesEspecificos() {
-    if (widget.equipo == null) return;
+    if (widget.equipo == null) {
+      print('No hay equipo para cargar detalles');
+      return;
+    }
     
+    print('Cargando detalles específicos del equipo ID: ${widget.equipo!.id}');
+    print('Detalles completos: ${widget.equipo!.detalle}');
+    
+    // Verificar que los controladores estén inicializados
+    if (_detallesControllers.isEmpty) {
+      print('ERROR: Los controladores no están inicializados');
+      _inicializarControladores();
+    }
+    
+    // Cargar todos los campos del detalle en los controladores correspondientes
     widget.equipo!.detalle.forEach((key, value) {
-      if (_detallesControllers.containsKey(key) && value != null) {
-        _detallesControllers[key]!.text = value.toString();
+      if (_detallesControllers.containsKey(key)) {
+        print('Cargando campo $key con valor: $value');
+        _detallesControllers[key]!.text = value?.toString() ?? '';
+      } else {
+        print('No existe controlador para el campo: $key');
       }
     });
+    
+    // Manejar caso especial: disco_duro/almacenamiento
+    if (_detallesControllers.containsKey('disco_duro')) {
+      if (widget.equipo!.detalle.containsKey('disco_duro')) {
+        print('Cargando disco_duro: ${widget.equipo!.detalle['disco_duro']}');
+        _detallesControllers['disco_duro']!.text = widget.equipo!.detalle['disco_duro']?.toString() ?? '';
+      } else if (widget.equipo!.detalle.containsKey('almacenamiento')) {
+        print('Cargando almacenamiento como disco_duro: ${widget.equipo!.detalle['almacenamiento']}');
+        _detallesControllers['disco_duro']!.text = widget.equipo!.detalle['almacenamiento']?.toString() ?? '';
+      }
+    }
+    
+    // Manejar caso especial: numero_linea/numero
+    if (_detallesControllers.containsKey('numero')) {
+      if (widget.equipo!.detalle.containsKey('numero_linea')) {
+        print('Cargando numero_linea como numero: ${widget.equipo!.detalle['numero_linea']}');
+        _detallesControllers['numero']!.text = widget.equipo!.detalle['numero_linea']?.toString() ?? '';
+      }
+    }
+    
+    // Imprimir los valores cargados para depuración
+    print('\n--- VALORES CARGADOS EN CONTROLADORES ---');
+    _detallesControllers.forEach((key, controller) {
+      print('Campo $key: "${controller.text}"');
+    });
+    print('--- FIN DE VALORES CARGADOS ---\n');
   }
   
   // Prepara los datos para enviar al servidor
   Map<String, dynamic> _prepararDatos() {
+    // FORZAR el tipo de equipo a uno de los valores válidos
+    String tipoEquipoNormalizado;
+    
+    // Asignar directamente uno de los valores válidos basado en el tipo seleccionado
+    if (_tipoEquipo.toLowerCase().contains('compu')) {
+      tipoEquipoNormalizado = 'Computacional';
+    } else if (_tipoEquipo.toLowerCase().contains('cel')) {
+      tipoEquipoNormalizado = 'Celular';
+    } else if (_tipoEquipo.toLowerCase().contains('impre')) {
+      tipoEquipoNormalizado = 'Impresora';
+    } else {
+      // Si no podemos determinar, usar Computacional como valor por defecto
+      tipoEquipoNormalizado = 'Computacional';
+    }
+    
+    print('[DEBUG] Tipo de equipo original: $_tipoEquipo');
+    print('[DEBUG] Tipo de equipo normalizado a: $tipoEquipoNormalizado');
+    
+    // Si estamos editando, usar el tipo del equipo existente
+    if (widget.equipo != null) {
+      String tipoOriginal = widget.equipo!.tipo;
+      if (tipoOriginal == 'Computacional' || tipoOriginal == 'Celular' || tipoOriginal == 'Impresora') {
+        tipoEquipoNormalizado = tipoOriginal;
+        print('[DEBUG] Usando tipo de equipo existente: $tipoEquipoNormalizado');
+      }
+    }
+    
     // Datos básicos
-    final datos = {
+    final datos = <String, dynamic>{
       'estado': _estadoController.text,
-      'tipo_equipo': _tipoEquipo,
+      'tipo_equipo': tipoEquipoNormalizado,
       'observaciones': _observacionesController.text,
-      'detalle': <String, dynamic>{},
     };
     
-    // Agregamos los detalles comunes
-    final detalle = datos['detalle'] as Map<String, dynamic>;
-    detalle['nombre_equipo'] = _detallesControllers['nombre_equipo']!.text;
-    detalle['marca'] = _detallesControllers['marca']!.text;
-    detalle['modelo'] = _detallesControllers['modelo']!.text;
-    detalle['serial_number'] = _detallesControllers['serial_number']!.text;
+    // Agregar campos comunes a todos los tipos
+    datos['marca'] = _detallesControllers['marca']!.text;
+    datos['modelo'] = _detallesControllers['modelo']!.text;
+    datos['serial_number'] = _detallesControllers['serial_number']!.text;
     
-    // Agregamos detalles específicos según el tipo
-    if (_tipoEquipo == 'Computacional') {
-      detalle['procesador'] = _detallesControllers['procesador']!.text;
-      detalle['ram'] = _detallesControllers['ram']!.text;
-      detalle['almacenamiento'] = _detallesControllers['almacenamiento']!.text;
-      detalle['sistema_operativo'] = _detallesControllers['sistema_operativo']!.text;
-    } else if (_tipoEquipo == 'Celular') {
-      detalle['imei'] = _detallesControllers['imei']!.text;
-      detalle['numero'] = _detallesControllers['numero']!.text;
-      detalle['plan'] = _detallesControllers['plan']!.text;
-    } else if (_tipoEquipo == 'Impresora') {
-      detalle['tipo_impresora'] = _detallesControllers['tipo_impresora']!.text;
-      detalle['conectividad'] = _detallesControllers['conectividad']!.text;
-      detalle['toner_cartucho'] = _detallesControllers['toner_cartucho']!.text;
+    // Agregar campos específicos según el tipo de equipo
+    if (tipoEquipoNormalizado == 'Computacional') {
+      datos['nombre_equipo'] = _detallesControllers['nombre_equipo']!.text;
+      datos['procesador'] = _detallesControllers['procesador']!.text;
+      datos['ram'] = _detallesControllers['ram']!.text;
+      datos['disco_duro'] = _detallesControllers['disco_duro']!.text;
+      datos['sistema_operativo'] = _detallesControllers['sistema_operativo']!.text;
+      // Agregar campos opcionales si existen los controladores
+      if (_detallesControllers.containsKey('office')) {
+        datos['office'] = _detallesControllers['office']!.text;
+      }
+      if (_detallesControllers.containsKey('antivirus')) {
+        datos['antivirus'] = _detallesControllers['antivirus']!.text;
+      }
+      if (_detallesControllers.containsKey('drive')) {
+        datos['drive'] = _detallesControllers['drive']!.text;
+      }
+    } else if (tipoEquipoNormalizado == 'Celular') {
+      datos['imei'] = _detallesControllers['imei']!.text;
+      // Asegurarse de usar el nombre correcto del campo
+      if (_detallesControllers.containsKey('numero_linea')) {
+        datos['numero_linea'] = _detallesControllers['numero_linea']!.text;
+      } else if (_detallesControllers.containsKey('numero')) {
+        datos['numero_linea'] = _detallesControllers['numero']!.text;
+      }
+      // Agregar sistema operativo si existe
+      if (_detallesControllers.containsKey('sistema_operativo')) {
+        datos['sistema_operativo'] = _detallesControllers['sistema_operativo']!.text;
+      }
+    } else if (tipoEquipoNormalizado == 'Impresora') {
+      // Asegurarse de usar el nombre correcto del campo
+      if (_detallesControllers.containsKey('tipo_conexion')) {
+        datos['tipo_conexion'] = _detallesControllers['tipo_conexion']!.text;
+      } else if (_detallesControllers.containsKey('conectividad')) {
+        datos['tipo_conexion'] = _detallesControllers['conectividad']!.text;
+      }
+      // Agregar IP asignada si existe
+      if (_detallesControllers.containsKey('ip_asignada')) {
+        datos['ip_asignada'] = _detallesControllers['ip_asignada']!.text;
+      }
     }
+    
+    // Agregar código interno si existe
+    if (widget.equipo != null && widget.equipo!.codigoInterno.isNotEmpty) {
+      datos['codigo_interno'] = widget.equipo!.codigoInterno;
+    }
+    
+    // Si estamos editando, agregamos los datos del equipo existente
+    if (widget.equipo != null) {
+      // Agregamos información de usuario responsable si está disponible
+      if (widget.equipo!.usuarioResponsable?.id != null) {
+        datos['id_usuario_responsable'] = widget.equipo!.usuarioResponsable!.id!;
+      }
+      
+      // Agregamos información de área responsable si está disponible
+      if (widget.equipo!.areaResponsable?.id != null) {
+        datos['id_area_responsable'] = widget.equipo!.areaResponsable!.id!;
+      }
+      
+      // Agregamos información de sucursal si está disponible
+      if (widget.equipo!.sucursalUbicacion?.id != null) {
+        datos['id_sucursal_ubicacion'] = widget.equipo!.sucursalUbicacion!.id!;
+      }
+    }
+    
+    // Imprimir los datos para depuración
+    print('Datos preparados para enviar: $datos');
     
     return datos;
   }
   
   // Guarda el equipo (crea o actualiza)
   Future<void> _guardarEquipo() async {
+    // Evitar múltiples envíos
+    if (_isLoading) return;
+    
     if (!_formKey.currentState!.validate()) return;
     
     setState(() {
       _isLoading = true;
-      _errorMessage = null;
     });
     
-    final datos = _prepararDatos();
-    bool resultado;
-    
     try {
-      if (widget.equipo == null) {
-        // Crear nuevo equipo
-        resultado = await _equipoService.crearEquipo(datos);
-      } else {
+      final datos = _prepararDatos();
+      
+      // Depuración detallada
+      print('\n==== DATOS PARA GUARDAR EQUIPO ====');
+      print('Tipo de operación: ${widget.equipo != null ? "ACTUALIZACIÓN" : "CREACIÓN"}');
+      if (widget.equipo != null) {
+        print('ID de inventario: ${widget.equipo!.id}');
+        print('Tipo de equipo actual: ${widget.equipo!.tipo}');
+      }
+      print('Tipo de equipo enviado: ${datos["tipo_equipo"]}');
+      print('Estado: ${datos["estado"]}');
+      print('Datos completos: $datos');
+      print('==============================\n');
+      
+      bool resultado;
+      
+      if (widget.equipo != null) {
         // Actualizar equipo existente
         resultado = await _equipoService.actualizarEquipo(widget.equipo!.id, datos);
+      } else {
+        // Crear nuevo equipo
+        resultado = await _equipoService.crearEquipo(datos);
       }
       
       if (resultado) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(widget.equipo == null ? 'Equipo creado con éxito' : 'Equipo actualizado con éxito')),
+            SnackBar(content: Text(widget.equipo != null ? 'Equipo actualizado correctamente' : 'Equipo agregado correctamente')),
           );
-          Navigator.pop(context, true); // Regresamos con resultado exitoso
+          Navigator.of(context).pop(true); // Volver a la pantalla anterior con resultado exitoso
         }
       } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Error al guardar el equipo')),
+          );
+        }
+      }
+    } catch (e) {
+      print('Error al guardar equipo: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e')),
+        );
+      }
+      
+      // Intentamos cerrar la pantalla de todos modos si el equipo se creó parcialmente
+      if (_equipoService.lastCreatedEquipoId != null) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('El equipo se creó pero hubo un error al actualizar la interfaz')),
+          );
+          Navigator.pop(context, true);
+        }
+        return;
+      }
+    } finally {
+      // Si llegamos aquí y no hemos cerrado la pantalla, actualizamos el estado
+      if (mounted) {
         setState(() {
-          _errorMessage = 'Error al guardar el equipo. Intente nuevamente.';
           _isLoading = false;
         });
       }
-    } catch (e) {
-      setState(() {
-        _errorMessage = 'Error: $e';
-        _isLoading = false;
-      });
     }
   }
   
@@ -348,13 +512,26 @@ class _EquipoFormState extends State<EquipoForm> {
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       OutlinedButton(
-                        onPressed: () => Navigator.pop(context),
+                        onPressed: _isLoading ? null : () => Navigator.pop(context),
                         child: const Text('Cancelar'),
                       ),
                       const SizedBox(width: 16),
                       ElevatedButton(
-                        onPressed: _guardarEquipo,
-                        child: Text(widget.equipo == null ? 'Crear' : 'Actualizar'),
+                        onPressed: _isLoading ? null : _guardarEquipo,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Theme.of(context).primaryColor,
+                          foregroundColor: Colors.white,
+                        ),
+                        child: _isLoading
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : Text(widget.equipo == null ? 'Crear' : 'Actualizar'),
                       ),
                     ],
                   ),
@@ -387,9 +564,9 @@ class _EquipoFormState extends State<EquipoForm> {
           ),
           const SizedBox(height: 8),
           TextFormField(
-            controller: _detallesControllers['almacenamiento'],
+            controller: _detallesControllers['disco_duro'],
             decoration: const InputDecoration(
-              labelText: 'Almacenamiento',
+              labelText: 'Disco Duro',
               border: OutlineInputBorder(),
             ),
           ),

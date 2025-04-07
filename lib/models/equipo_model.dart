@@ -32,6 +32,19 @@ class AreaModel {
       nombre: json['nombre'],
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id_inventario': id,
+      'id_equipo': id,
+      'estado': 'Activo',
+      'id_usuario_responsable': id,
+      'id_area_responsable': id,
+      'id_sucursal_ubicacion': id,
+      'fecha_ingreso': DateTime.now().toIso8601String(),
+      'observaciones': 'Sin observaciones',
+    };
+  }
 }
 
 class SucursalModel {
@@ -52,39 +65,52 @@ class SucursalModel {
 }
 
 class EquipoModel {
-  final int id;
+  final int id; // id_inventario
+  final Map<String, dynamic> equipo; // datos del equipo
   final String estado;
-  final String tipo;
-  final Map detalle;
+  final Map<String, dynamic>? responsable;
+  final Map<String, dynamic>? area;
+  final Map<String, dynamic>? sucursal;
   final DateTime? fechaIngreso;
   final String? observaciones;
-  final ResponsableModel? usuarioResponsable;
-  final AreaModel? areaResponsable;
-  final SucursalModel? sucursal;
 
   EquipoModel({
     required this.id,
+    required this.equipo,
     required this.estado,
-    required this.tipo,
-    required this.detalle,
+    this.responsable,
+    this.area,
+    this.sucursal,
     this.fechaIngreso,
     this.observaciones,
-    this.usuarioResponsable,
-    this.areaResponsable,
-    this.sucursal,
   });
 
-  factory EquipoModel.fromJson(Map json) {
+  // Getters para facilitar el acceso a los datos del equipo
+  String get tipo => equipo['tipo_equipo'] ?? 'No especificado';
+  String get marca => equipo['marca'] ?? 'No especificada';
+  String get modelo => equipo['modelo'] ?? 'No especificado';
+  String get nombreEquipo => equipo['nombre_equipo'] ?? 'No especificado';
+  String get serialNumber => equipo['serial_number'] ?? 'No especificado';
+  String get codigoInterno => equipo['codigo_interno'] ?? 'No especificado';
+  
+  // Getter para acceder a los detalles del equipo (para compatibilidad con código existente)
+  Map<String, dynamic> get detalle => equipo;
+  
+  // Getters para acceder a los datos del responsable, área y sucursal
+  ResponsableModel? get usuarioResponsable => responsable != null ? ResponsableModel.fromJson(responsable) : null;
+  AreaModel? get areaResponsable => area != null ? AreaModel.fromJson(area) : null;
+  SucursalModel? get sucursalUbicacion => sucursal != null ? SucursalModel.fromJson(sucursal) : null;
+
+  factory EquipoModel.fromJson(Map<String, dynamic> json) {
     return EquipoModel(
-      id: json['id'],
-      estado: json['estado'] ?? 'SinAsignar',
-      tipo: json['detalle']['tipo'] ?? '',
-      detalle: json['detalle'] ?? {},
+      id: json['id_inventario'],
+      equipo: json['equipo'] ?? {},
+      estado: json['estado'],
+      responsable: json['responsable'],
+      area: json['area'],
+      sucursal: json['sucursal'],
       fechaIngreso: json['fecha_ingreso'] != null ? DateTime.parse(json['fecha_ingreso']) : null,
       observaciones: json['observaciones'],
-      usuarioResponsable: ResponsableModel.fromJson(json['detalle']['usuario_responsable']),
-      areaResponsable: AreaModel.fromJson(json['detalle']['area_responsable']),
-      sucursal: SucursalModel.fromJson(json['detalle']['sucursal']),
     );
   }
 }

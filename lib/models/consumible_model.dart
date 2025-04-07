@@ -23,10 +23,10 @@ class ConsumibleModel {
     return ConsumibleModel(
       id: json['id_consumible'],
       tipo: json['tipo'],
-      marca: json['marca'] ?? '',
-      modelo: json['modelo'] ?? '',
-      stockActual: json['stock_actual'] ?? 0,
-      stockMinimo: json['stock_minimo'] ?? 0,
+      marca: json['marca'],
+      modelo: json['modelo'],
+      stockActual: json['stock_actual'],
+      stockMinimo: json['stock_minimo'],
       sucursal: json['sucursal'],
     );
   }

@@ -388,10 +388,10 @@ class _EquiposGeneralesPageState extends State<EquiposGeneralesPage> {
             ],
             
             // Información de la sucursal
-            if (_equipoSeleccionado!.sucursal != null) ...[
+            if (_equipoSeleccionado!.sucursalUbicacion != null) ...[
               _buildSectionTitle(context, 'Sucursal'),
-              _buildInfoRow('Nombre', _equipoSeleccionado!.sucursal?.nombre ?? 'No asignada'),
-              _buildInfoRow('Dirección', _equipoSeleccionado!.sucursal?.direccion ?? 'No disponible'),
+              _buildInfoRow('Nombre', _equipoSeleccionado!.sucursalUbicacion?.nombre ?? 'No asignada'),
+              _buildInfoRow('Dirección', _equipoSeleccionado!.sucursalUbicacion?.direccion ?? 'No disponible'),
               const SizedBox(height: 16),
             ],
             
